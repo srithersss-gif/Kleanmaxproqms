@@ -53,6 +53,18 @@ for sub in ["headers", "products", "unique_painters", "kleanmax"]:
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
+@app.get("/", tags=["Root"])
+def root():
+    return {
+        "status": "online",
+        "service": "Klean Max Pro QMS API Backend",
+        "version": "1.0.0",
+        "docs": f"{settings.API_V1_STR}/docs",
+        "health": "/api/health",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
 @app.get("/{filename}.png")
 @app.get("/{filename}.jpg")
 @app.get("/{filename}.jpeg")
