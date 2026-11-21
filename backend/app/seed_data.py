@@ -26,6 +26,14 @@ def run_seed():
             conn.commit()
     except Exception:
         pass
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE company_settings ALTER COLUMN gstin TYPE VARCHAR(50)"))
+            conn.execute(text("ALTER TABLE customers ALTER COLUMN gstin TYPE VARCHAR(50)"))
+            conn.commit()
+    except Exception:
+        pass
     db = SessionLocal()
 
     try:
@@ -144,7 +152,7 @@ def run_seed():
                 "company_code": "cleantech",
                 "company_name": "Cleantech Services",
                 "legal_name": "Cleantech Environmental & Industrial Services LLP",
-                "gstin": "33BWHPM8908H2ZP9",
+                "gstin": "33BWHPM8908H2ZP",
                 "pan": "BWHPM8908H",
                 "cin": "AAK-8921",
                 "address_line1": "NO 6, B6, Jayam Industrial Estate, Chettiyar Agaram First Main Road, Near Porur Toll Plaza",
