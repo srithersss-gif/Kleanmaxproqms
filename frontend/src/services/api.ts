@@ -3,7 +3,8 @@ import {
   CompanySetting
 } from './types';
 
-const BASE_URL = (((import.meta as any).env?.VITE_API_BASE_URL as string) || ((import.meta as any).env?.VITE_API_URL as string) || '/api').replace(/\/$/, '');
+const rawBase = (((import.meta as any).env?.VITE_API_BASE_URL as string) || ((import.meta as any).env?.VITE_API_URL as string) || '/api').replace(/\/$/, '');
+const BASE_URL = rawBase.endsWith('/api') ? rawBase : `${rawBase}/api`;
 
 class ApiError extends Error {
   status: number;

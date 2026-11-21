@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   currentPage,
   onNavigate,
-  onLogout = () => {},
+  onLogout = () => { },
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -118,13 +118,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* 1. Super Admin Dropdown */}
           {showSuperAdmin && (
             <div className="relative flex items-center">
-              <div className={`flex items-center rounded-xl transition-all border ${
-                isSuperAdminActive
+              <div className={`flex items-center rounded-xl transition-all border ${isSuperAdminActive
                   ? 'bg-slate-900 text-amber-300 border-slate-950 font-black shadow-xs'
                   : activeDropdown === 'superadmin'
-                  ? 'bg-slate-200 text-slate-950 border-slate-300'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
-              }`}>
+                    ? 'bg-slate-200 text-slate-950 border-slate-300'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
+                }`}>
                 <button
                   type="button"
                   onClick={() => handleSubOptionClick('dashboard')}
@@ -142,9 +141,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title="Super Admin Menu"
                 >
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'superadmin' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'superadmin' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               </div>
@@ -196,13 +194,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* 2. Klean Max Pro Dropdown (Clicking Name opens Hub directly; Dropdown has strictly 2 items) */}
           {showKmp && (
             <div className="relative flex items-center">
-              <div className={`flex items-center rounded-xl transition-all border ${
-                isKmpActive
+              <div className={`flex items-center rounded-xl transition-all border ${isKmpActive
                   ? 'bg-amber-400 text-slate-950 border-amber-500 font-black shadow-xs'
                   : activeDropdown === 'kleanmaxpro'
-                  ? 'bg-amber-100 text-amber-950 border-amber-300'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
-              }`}>
+                    ? 'bg-amber-100 text-amber-950 border-amber-300'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
+                }`}>
                 <button
                   type="button"
                   onClick={() => handleSubOptionClick('kleanmaxpro_dash')}
@@ -220,9 +217,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title="KMP Quick Actions"
                 >
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'kleanmaxpro' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'kleanmaxpro' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               </div>
@@ -262,13 +258,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* 3. Kleanmax Dropdown (Clicking Name opens Hub directly; Dropdown has strictly 2 items) */}
           {showKlm && (
             <div className="relative flex items-center">
-              <div className={`flex items-center rounded-xl transition-all border ${
-                isKlmActive
+              <div className={`flex items-center rounded-xl transition-all border ${isKlmActive
                   ? 'bg-emerald-600 text-white border-emerald-700 font-black shadow-xs'
                   : activeDropdown === 'kleanmax'
-                  ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
-              }`}>
+                    ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
+                }`}>
                 <button
                   type="button"
                   onClick={() => handleSubOptionClick('kleanmax_dash')}
@@ -286,9 +281,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title="KLM Quick Actions"
                 >
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'kleanmax' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'kleanmax' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               </div>
@@ -328,13 +322,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* 4. Unique Painters Dropdown (Clicking Name opens Hub directly; Dropdown has strictly 2 items) */}
           {showUnp && (
             <div className="relative flex items-center">
-              <div className={`flex items-center rounded-xl transition-all border ${
-                isUnpActive
+              <div className={`flex items-center rounded-xl transition-all border ${isUnpActive
                   ? 'bg-[#1A5393] text-white border-[#154377] font-black shadow-xs'
                   : activeDropdown === 'uniquepainters'
-                  ? 'bg-blue-100 text-blue-950 border-blue-300'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
-              }`}>
+                    ? 'bg-blue-100 text-blue-950 border-blue-300'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
+                }`}>
                 <button
                   type="button"
                   onClick={() => handleSubOptionClick('uniquepainters_dash')}
@@ -352,9 +345,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title="UNP Quick Actions"
                 >
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'uniquepainters' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'uniquepainters' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               </div>
@@ -394,13 +386,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* 5. Cleantech Services Dropdown (Clicking Name opens Hub directly; Dropdown has strictly 2 items) */}
           {showCts && (
             <div className="relative flex items-center">
-              <div className={`flex items-center rounded-xl transition-all border ${
-                isCtsActive
+              <div className={`flex items-center rounded-xl transition-all border ${isCtsActive
                   ? 'bg-slate-950 text-white border-black font-black shadow-xs'
                   : activeDropdown === 'cleantech'
-                  ? 'bg-slate-200 text-slate-950 border-slate-300'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
-              }`}>
+                    ? 'bg-slate-200 text-slate-950 border-slate-300'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-slate-200'
+                }`}>
                 <button
                   type="button"
                   onClick={() => handleSubOptionClick('cleantech_dash')}
@@ -418,9 +409,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title="CTS Quick Actions"
                 >
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      activeDropdown === 'cleantech' ? 'rotate-180' : ''
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'cleantech' ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               </div>
