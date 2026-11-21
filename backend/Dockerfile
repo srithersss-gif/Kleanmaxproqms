@@ -3,14 +3,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for Playwright and database connections
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Install system dependencies for Playwright, SSL certificates and PostgreSQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend requirements
+# Copy backend requirements and install dependencies
 COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /app/requirements.txt
@@ -21,9 +27,6 @@ RUN python -m playwright install --with-deps chromium
 # Copy application source
 COPY backend /app/backend
 COPY supabase /app/supabase
-
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
