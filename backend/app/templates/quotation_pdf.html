@@ -1334,6 +1334,13 @@
         {% endif %}
     </div>
 
+    {# Global Financial Totals with independent CGST, SGST, IGST support #}
+    {% set render_subtotal = snapshot.subtotal if (snapshot and snapshot.subtotal is defined) else (quotation.subtotal or 0) %}
+    {% set render_cgst = snapshot.cgstAmount if (snapshot and snapshot.cgstAmount is defined) else (snapshot.cgst if (snapshot and snapshot.cgst is defined) else (quotation.cgst_amount or 0)) %}
+    {% set render_sgst = snapshot.sgstAmount if (snapshot and snapshot.sgstAmount is defined) else (snapshot.sgst if (snapshot and snapshot.sgst is defined) else (quotation.sgst_amount or 0)) %}
+    {% set render_igst = snapshot.igstAmount if (snapshot and snapshot.igstAmount is defined) else (snapshot.igst if (snapshot and snapshot.igst is defined) else (quotation.igst_amount or 0)) %}
+    {% set render_total = snapshot.totalAmount if (snapshot and snapshot.totalAmount is defined) else (snapshot.finalTotal if (snapshot and snapshot.finalTotal is defined) else (quotation.final_amount or 0)) %}
+
     <!-- 5. Items / Spares / Services Table or Dynamic Word Scope -->
     {% if company_code == 'kleanmax' and quotation.quotation_type not in ['item_based', 'repair_service', 'rental', 'sales'] and (not items or items|length == 0) and (not snapshot.get('items') or snapshot.get('items')|length == 0) and ('WILSTON' in quotation.job_description|default('')|upper or 'POWER PLANT' in quotation.job_description|default('')|upper or snapshot.cleanableSqft) %}
     <!-- DYNAMIC WORD-PROCESSOR SCOPE OF WORK (CONTINUOUS NATURAL FLOW) -->

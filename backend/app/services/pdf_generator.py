@@ -174,6 +174,10 @@ def render_quotation_html(
             itm_img = getattr(itm, 'image_url', None)
             name = getattr(itm, 'item_name', '') or ''
         
+        # Check item image_url first, then fallback to quotation.image_url for the first item
+        if not itm_img and quotation and getattr(quotation, 'image_url', None) and len(processed_items) == 0:
+            itm_img = getattr(quotation, 'image_url')
+
         # If no explicit image_url, detect product machine image by name
         if not itm_img and name:
             nm = name.upper()

@@ -136,7 +136,7 @@ def health_check():
 def db_check():
     import traceback
     from sqlalchemy import text
-    from backend.app.core.database import engine, db_url
+    from backend.app.core.database import engine, db_url, db_init_error
     
     # Hide password in connection string for security
     safe_url = str(db_url)
@@ -153,11 +153,12 @@ def db_check():
             except Exception:
                 company_count = "table_not_created"
         return {
-            "status": "connected",
+            "status": "connected" if not db_init_error else "fallback_sqlite",
             "db_type": engine.name,
             "company_count": company_count,
             "test_query": result,
-            "configured_url": safe_url
+            "configured_url": safe_url,
+            "db_init_warning": db_init_error
         }
     except Exception as e:
         return JSONResponse(
@@ -167,7 +168,8 @@ def db_check():
                 "error_type": type(e).__name__,
                 "error_message": str(e),
                 "traceback": traceback.format_exc().splitlines()[-6:],
-                "configured_url": safe_url
+                "configured_url": safe_url,
+                "db_init_warning": db_init_error
             }
         )
 
