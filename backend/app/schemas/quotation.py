@@ -235,8 +235,7 @@ class QuotationListItemResponse(BaseModel):
     parent_quotation_id: Optional[str] = None
     customer_id: str
     quotation_type: str = "area_based"
-    status: str
-    is_archived: bool = False = "draft"
+    status: str = "draft"
     is_archived: bool = False
     quotation_date: date
     validity_date: Optional[date] = None

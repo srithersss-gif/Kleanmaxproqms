@@ -1,3 +1,4 @@
+import os
 import uuid
 from sqlalchemy import create_engine, String, TypeDecorator
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -20,15 +21,11 @@ class GUID(TypeDecorator):
             return value
         return str(value)
 
-import uuid
 import logging
 from urllib.parse import quote_plus, unquote
 from pathlib import Path
-from sqlalchemy import create_engine, String, TypeDecorator
-from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
-from backend.app.core.config import settings
 
 logger = logging.getLogger("database")
 
@@ -56,9 +53,12 @@ def sanitize_database_url(raw_url: str) -> str:
         return "sqlite:///./kleanmaxpro.db"
 
     url = str(raw_url).strip()
-    # Strip any enclosing quotes (e.g., copied from .env file directly into Railway variables)
-    while (url.startswith('"') and url.endswith('"')) or (url.startswith("'") and url.endswith("'")):
-        url = url[1:-1].strip()
+    # Strip any enclosing or accidental quotes (e.g., copied from .env file or Railway variables)
+    url = url.strip('\'" \t\r\n')
+    while url and (url.startswith('"') or url.startswith("'")):
+        url = url[1:].strip('\'" \t\r\n')
+    while url and (url.endswith('"') or url.endswith("'")):
+        url = url[:-1].strip('\'" \t\r\n')
 
     if not url:
         return "sqlite:///./kleanmaxpro.db"
