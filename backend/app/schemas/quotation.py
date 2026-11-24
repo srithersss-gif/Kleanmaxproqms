@@ -174,6 +174,7 @@ class QuotationResponse(BaseModel):
     customer_id: str
     quotation_type: str
     status: str
+    is_archived: bool = False
     quotation_date: date
     validity_date: date
     customer_ref: Optional[str] = None
@@ -234,7 +235,9 @@ class QuotationListItemResponse(BaseModel):
     parent_quotation_id: Optional[str] = None
     customer_id: str
     quotation_type: str = "area_based"
-    status: str = "draft"
+    status: str
+    is_archived: bool = False = "draft"
+    is_archived: bool = False
     quotation_date: date
     validity_date: Optional[date] = None
     customer_ref: Optional[str] = None

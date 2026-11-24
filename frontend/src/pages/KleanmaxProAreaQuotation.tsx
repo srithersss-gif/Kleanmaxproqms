@@ -885,10 +885,7 @@ Recovery / Dirty Water Tank: 100 L`,
 
   const handleDownloadDocx = async () => {
     try {
-      let quoteId = savedQuoteId;
-      if (!quoteId) {
-        quoteId = await handleSaveToDatabase();
-      }
+      const quoteId = await handleSaveToDatabase();
       if (quoteId) {
         setToastMsg('Generating Word (.docx) document with authentic letterhead...');
         await api.quotations.downloadDocx(quoteId, `${quotationNo.replace(/[\/\\]/g, '_')}_KleanmaxPro.docx`);
@@ -902,10 +899,7 @@ Recovery / Dirty Water Tank: 100 L`,
 
   const handleDownloadPdf = async () => {
     try {
-      let quoteId = savedQuoteId;
-      if (!quoteId) {
-        quoteId = await handleSaveToDatabase();
-      }
+      const quoteId = await handleSaveToDatabase();
       if (quoteId) {
         setToastMsg('Generating official PDF with authentic letterhead...');
         await api.quotations.downloadPdf(quoteId, `${quotationNo.replace(/[\/\\]/g, '_')}_KleanmaxPro.pdf`);
@@ -918,10 +912,7 @@ Recovery / Dirty Water Tank: 100 L`,
   };
 
   const handlePrint = async () => {
-    let quoteId = savedQuoteId;
-    if (!quoteId) {
-      quoteId = await handleSaveToDatabase();
-    }
+    const quoteId = await handleSaveToDatabase();
     if (quoteId) {
       const printWindow = window.open(api.quotations.getHtmlUrl(quoteId), '_blank');
       if (printWindow) {
@@ -931,11 +922,8 @@ Recovery / Dirty Water Tank: 100 L`,
   };
 
   const handleOpenA4Preview = async () => {
+    await handleSaveToDatabase();
     setInPagePreviewOpen(true);
-    // Also save in background if not yet saved so server side preview is ready
-    if (!savedQuoteId) {
-      handleSaveToDatabase();
-    }
   };
 
   return (

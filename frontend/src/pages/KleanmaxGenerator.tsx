@@ -526,14 +526,11 @@ export const KleanmaxGenerator: React.FC<KleanmaxGeneratorProps> = ({
     }
   };
 
-  // 2. Download PDF
+  // 2. Download PDF (Always updates DB first)
   const handleDownloadPdf = async () => {
     try {
       setLoading(true);
-      let qId = savedQuotationId;
-      if (!qId) {
-        qId = await handleSaveToDb();
-      }
+      const qId = await handleSaveToDb();
       if (!qId) return;
 
       const filename = `${quotationNumber.replace(/[\/\\]/g, '_')}_Kleanmax_Cleaning_Proposal.pdf`;
@@ -546,14 +543,11 @@ export const KleanmaxGenerator: React.FC<KleanmaxGeneratorProps> = ({
     }
   };
 
-  // 3. Download Word (.docx)
+  // 3. Download Word (.docx) (Always updates DB first)
   const handleDownloadDocx = async () => {
     try {
       setLoading(true);
-      let qId = savedQuotationId;
-      if (!qId) {
-        qId = await handleSaveToDb();
-      }
+      const qId = await handleSaveToDb();
       if (!qId) return;
 
       const filename = `${quotationNumber.replace(/[\/\\]/g, '_')}_Kleanmax_Cleaning_Proposal.docx`;
@@ -566,14 +560,11 @@ export const KleanmaxGenerator: React.FC<KleanmaxGeneratorProps> = ({
     }
   };
 
-  // 4. Print
+  // 4. Print (Always updates DB first)
   const handlePrint = async () => {
     try {
       setLoading(true);
-      let qId = savedQuotationId;
-      if (!qId) {
-        qId = await handleSaveToDb();
-      }
+      const qId = await handleSaveToDb();
       if (!qId) return;
       const printWindow = window.open(api.quotations.getHtmlUrl(qId), '_blank');
       if (printWindow) {
@@ -642,10 +633,13 @@ export const KleanmaxGenerator: React.FC<KleanmaxGeneratorProps> = ({
           </button>
 
           <button
-            onClick={() => setInPagePreviewOpen(true)}
+            onClick={async () => {
+              await handleSaveToDb();
+              setInPagePreviewOpen(true);
+            }}
             disabled={loading || saving}
             className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
-            title="Preview A4 Document"
+            title="Preview A4 Document (saves latest changes to DB)"
           >
             <Eye className="w-4 h-4 text-lime-600" />
             <span>Preview A4</span>

@@ -120,7 +120,7 @@ export interface QuotationItem {
   notes?: string;
 }
 
-export type QuotationStatus = 'draft' | 'pending_approval' | 'approved' | 'issued' | 'revised' | 'cancelled' | 'confirmed';
+export type QuotationStatus = 'draft' | 'pending_approval' | 'approved' | 'issued' | 'revised' | 'cancelled' | 'confirmed' | 'archived';
 
 export interface QuotationRevision {
   id: string;
@@ -133,6 +133,7 @@ export interface QuotationRevision {
 export interface Quotation {
   id: string;
   company_code?: string;
+  is_archived?: boolean;
   quotation_number: string;
   revision_number: number;
   parent_quotation_id?: string;

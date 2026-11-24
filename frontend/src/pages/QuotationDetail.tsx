@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import {
   ArrowLeft, Printer, Download, Eye, Lock, RotateCcw, CheckCircle,
   Clock, ShieldAlert, AlertTriangle, FileText, Building, Calendar,
-  CreditCard, Sparkles, X, Check, Send, Edit, Trash2
+  CreditCard, Sparkles, X, Check, Send, Edit, Archive
 } from 'lucide-react';
 
 interface QuotationDetailProps {
@@ -47,17 +47,28 @@ export const QuotationDetail: React.FC<QuotationDetailProps> = ({
 
   const isSuperAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin' || !currentUser?.company_code || currentUser?.company_code === 'all';
 
-  const handleDelete = async () => {
+  const handleArchive = async () => {
     if (!quotation) return;
-    if (!window.confirm(`Are you sure you want to permanently remove quotation ${quotation.quotation_number}? This cannot be undone.`)) {
+    if (!window.confirm(`Are you sure you want to archive quotation ${quotation.quotation_number}? The quotation will be safely preserved in Archived Quotations.`)) {
       return;
     }
     try {
-      await api.quotations.delete(quotation.id);
-      alert(`Quotation ${quotation.quotation_number} removed successfully.`);
+      await api.quotations.archive(quotation.id);
+      alert(`Quotation ${quotation.quotation_number} archived successfully.`);
       onNavigate('quotations');
     } catch (err: any) {
-      alert(err.message || 'Failed to remove quotation.');
+      alert(err.message || 'Failed to archive quotation.');
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (!quotation) return;
+    try {
+      await api.quotations.unarchive(quotation.id);
+      alert(`Quotation ${quotation.quotation_number} restored to Active Quotations!`);
+      loadQuotation();
+    } catch (err: any) {
+      alert(err.message || 'Failed to restore quotation.');
     }
   };
 
@@ -243,14 +254,23 @@ export const QuotationDetail: React.FC<QuotationDetailProps> = ({
             </button>
           )}
 
-          {isSuperAdmin && (
+          {quotation.is_archived ? (
             <button
-              onClick={handleDelete}
-              className="px-4 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              title="Permanently remove quotation (Super Admin Only)"
+              onClick={handleUnarchive}
+              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 hover:border-emerald-600 font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+              title="Restore quotation to active repository"
             >
-              <Trash2 className="w-4 h-4" />
-              <span>Remove Record</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>Restore from Archive</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleArchive}
+              className="px-4 py-2 bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white border border-amber-300 hover:border-amber-600 font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+              title="Archive quotation (safely preserved in archive)"
+            >
+              <Archive className="w-4 h-4" />
+              <span>Archive Record</span>
             </button>
           )}
 

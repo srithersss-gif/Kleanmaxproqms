@@ -4,10 +4,26 @@
     <meta charset="UTF-8">
     <title>Quotation {{ quotation.quotation_number }} - Klean Max Pro</title>
     <style>
+        {% if is_km_cleaning_proposal %}
         @page {
             size: A4 portrait;
             margin: 0;
         }
+        {% else %}
+        @page {
+            size: A4 portrait;
+            margin-top: 15mm;
+            margin-bottom: 14mm;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        @page :first {
+            margin-top: 0;
+            margin-bottom: 14mm;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        {% endif %}
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -195,6 +211,18 @@
                 position: relative;
                 overflow: hidden;
             }
+            .km-page-p1 {
+                padding: 0 !important;
+            }
+            .km-page-p2 {
+                padding: 0 !important;
+            }
+            .km-page-p3 {
+                padding: 22mm 24mm 24mm 24mm !important;
+            }
+            .km-page-p4 {
+                padding: 24mm 24mm 24mm 24mm !important;
+            }
             .page-break {
                 display: none !important;
                 height: 0 !important;
@@ -209,7 +237,6 @@
                 margin: 0;
             }
             .km-page {
-                padding: 0 !important;
                 margin: 0 !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
@@ -226,6 +253,18 @@
             .km-page:last-child {
                 page-break-after: auto;
                 break-after: auto;
+            }
+            .km-page-p1 {
+                padding: 0 !important;
+            }
+            .km-page-p2 {
+                padding: 0 !important;
+            }
+            .km-page-p3 {
+                padding: 22mm 24mm 24mm 24mm !important;
+            }
+            .km-page-p4 {
+                padding: 24mm 24mm 24mm 24mm !important;
             }
             .page-break {
                 display: none !important;
@@ -1025,7 +1064,7 @@
     </div>
 {% elif company_code == 'kleanmax' and quotation.quotation_type not in ['item_based', 'repair_service', 'rental', 'sales'] and (not snapshot.machineName) and ('CLEANING' in quotation.job_description|default('')|upper or 'PROPOSAL' in quotation.job_description|default('')|upper or snapshot.scopeTitle or snapshot.cleanableSqft or snapshot.scopeText or snapshot.quotationTitle or snapshot.docSubtitle) %}
     <!-- ================= KLEANMAX PAGE 1: COVER PAGE ================= -->
-    <div class="page km-page" style="height: 297mm; position: relative; box-sizing: border-box; overflow: hidden; background: #ffffff;">
+    <div class="page km-page km-page-p1" style="height: 297mm; position: relative; box-sizing: border-box; overflow: hidden; background: #ffffff;">
         <!-- Top Section: Logo (left) and WWW.KLEANMAX.COM Box (right) -->
         <table style="width: 100%; border-collapse: collapse; margin-top: 18mm; margin-bottom: 12mm;">
             <tr>
@@ -1094,7 +1133,7 @@
     </div>
 
     <!-- ================= KLEANMAX PAGE 2: ABOUT US & TEAM ================= -->
-    <div class="page km-page" style="height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; overflow: hidden; padding: 0; margin: 0; background: #ffffff;">
+    <div class="page km-page km-page-p2" style="height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; overflow: hidden; padding: 0; margin: 0; background: #ffffff;">
         {% if km_team_page_base64 %}
         <img src="data:image/jpeg;base64,{{ km_team_page_base64 }}" style="width: 100%; height: 297mm; object-fit: fill; display: block; margin: 0; padding: 0;" alt="About Us & Team Support" />
         {% else %}
@@ -1103,7 +1142,7 @@
     </div>
 
     <!-- ================= KLEANMAX PAGE 3: SCOPE & PROJECT VALUE ================= -->
-    <div class="page km-page" style="min-height: 297mm; height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; padding: 20mm 20mm 20mm 20mm; background: #ffffff;">
+    <div class="page km-page km-page-p3" style="min-height: 297mm; height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; padding: 22mm 24mm 24mm 24mm; background: #ffffff;">
         <!-- Header: DEEP CLEANING SERVICE : -->
         <div style="border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin-bottom: 14px;">
             <span style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; font-size: 16pt; font-weight: 900; text-transform: uppercase; color: #000000; text-decoration: underline;">
@@ -1169,7 +1208,7 @@
         </div>
 
         <!-- Total Project Value Block (Teal bar #205B73) -->
-        <div style="position: absolute; bottom: 16mm; left: 20mm; right: 20mm; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;">
+        <div style="position: absolute; bottom: 16mm; left: 24mm; right: 24mm; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;">
             <div style="font-size: 13pt; font-weight: 900; text-decoration: underline; color: #000000; margin-bottom: 4px;">
                 TOTAL PROJECT VALUE:
             </div>
@@ -1203,7 +1242,7 @@
     </div>
 
     <!-- ================= KLEANMAX PAGE 4: BANK DETAILS, TERMS & THANK YOU ================= -->
-    <div class="page km-page" style="min-height: 297mm; height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; padding: 22mm 22mm 22mm 22mm; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;">
+    <div class="page km-page km-page-p4" style="min-height: 297mm; height: 297mm; page-break-before: always; break-before: page; position: relative; box-sizing: border-box; padding: 24mm 24mm 24mm 24mm; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;">
         <!-- Company's Bank Details -->
         <div style="margin-bottom: 24px;">
             <div style="font-size: 13.5pt; font-weight: 900; text-decoration: underline; color: #000000; margin-bottom: 10px;">

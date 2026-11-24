@@ -79,10 +79,16 @@ def sanitize_database_url(raw_url: str) -> str:
                 clean_pass = quote_plus(unquote(pass_part))
                 url = f"{prefix}://{user_part}:{clean_pass}@{host_part}"
 
-    # Handle local relative sqlite database resolution
-    if url.startswith("sqlite:///./"):
-        db_filename = url.replace("sqlite:///./", "")
-        if not Path(db_filename).exists():
+    # Handle local relative sqlite database resolution and persistent volume check
+    if url.startswith("sqlite:///./") or url == "sqlite:///kleanmaxpro.db":
+        db_filename = "kleanmaxpro.db"
+        # Check Railway Volume mount path or /data directory for persistence across container restarts
+        vol_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+        if vol_path and Path(vol_path).is_dir():
+            url = f"sqlite:///{(Path(vol_path) / db_filename).as_posix()}"
+        elif Path("/data").is_dir():
+            url = "sqlite:////data/kleanmaxpro.db"
+        elif not Path(db_filename).exists():
             project_root = Path(__file__).resolve().parent.parent.parent.parent
             root_db = project_root / db_filename
             if root_db.exists():

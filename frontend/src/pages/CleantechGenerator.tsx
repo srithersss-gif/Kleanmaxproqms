@@ -942,10 +942,7 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
 
   const handleDownloadDocx = async () => {
     try {
-      let quoteId = savedQuoteId;
-      if (!quoteId) {
-        quoteId = await handleSaveToDatabase();
-      }
+      const quoteId = await handleSaveToDatabase();
       if (quoteId) {
         setToastMsg('Generating Word (.docx) document with authentic letterhead...');
         await api.quotations.downloadDocx(quoteId, `${quotationNo.replace(/[\/\\]/g, '_')}_Cleantech.docx`);
@@ -959,10 +956,7 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
 
   const handleDownloadPdf = async () => {
     try {
-      let quoteId = savedQuoteId;
-      if (!quoteId) {
-        quoteId = await handleSaveToDatabase();
-      }
+      const quoteId = await handleSaveToDatabase();
       if (quoteId) {
         setToastMsg('Generating official PDF with authentic letterhead...');
         await api.quotations.downloadPdf(quoteId, `${quotationNo.replace(/[\/\\]/g, '_')}_Cleantech.pdf`);
@@ -974,15 +968,13 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
     }
   };
 
-  const handleOpenA4Preview = () => {
+  const handleOpenA4Preview = async () => {
+    await handleSaveToDatabase();
     setInPagePreviewOpen(true);
   };
 
   const handlePrint = async () => {
-    let quoteId = savedQuoteId;
-    if (!quoteId) {
-      quoteId = await handleSaveToDatabase();
-    }
+    const quoteId = await handleSaveToDatabase();
     if (quoteId) {
       const printWindow = window.open(api.quotations.getHtmlUrl(quoteId), '_blank');
       if (printWindow) {

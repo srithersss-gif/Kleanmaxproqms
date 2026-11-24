@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import {
   FileText, Search, PlusCircle, Filter, Eye, Printer, Download,
   CheckCircle2, Send, RotateCcw, AlertTriangle, ChevronRight, X,
-  Wrench, ShoppingCart, Layers, Edit, Trash2, ShieldAlert,
+  Wrench, ShoppingCart, Layers, Edit, Archive, FolderArchive, ShieldAlert,
   Check, Lock, ShieldCheck, CheckSquare, Square
 } from 'lucide-react';
 
@@ -57,6 +57,7 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<'all' | 'kleanmaxpro' | 'kleanmax' | 'uniquepainters' | 'cleantech'>(defaultBrandFilter);
+  const [viewMode, setViewMode] = useState<'active' | 'archived'>('active');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -67,18 +68,18 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
     setBrandFilter(defaultBrandFilter);
   }, [defaultBrandFilter]);
 
-  // Load fresh quotations from API on mount
+  // Load fresh quotations from API on mount or viewMode change
   useEffect(() => {
-    loadQuotations();
-  }, []);
+    loadQuotations(false, viewMode);
+  }, [viewMode]);
 
-  const loadQuotations = async (silent = false) => {
+  const loadQuotations = async (silent = false, mode = viewMode) => {
     if (!silent && quotations.length === 0) setLoading(true);
     try {
-      const data = await api.quotations.list();
+      const data = await api.quotations.list({ show_archived: mode === 'archived' });
       setQuotations(data);
       try {
-        sessionStorage.setItem('kmp_cached_quotations', JSON.stringify(data));
+        sessionStorage.setItem(`kmp_cached_quotations_${mode}`, JSON.stringify(data));
       } catch (e) {
         console.warn('Cache write failed:', e);
       }
@@ -103,25 +104,36 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
     }
   };
 
-  const handleDelete = async (id: string, quotationNumber: string) => {
-    if (!window.confirm(`Are you sure you want to permanently delete quotation ${quotationNumber}? This action cannot be undone.`)) {
+  const handleArchive = async (id: string, quotationNumber: string) => {
+    if (!window.confirm(`Are you sure you want to archive quotation ${quotationNumber}? The record will be safely stored in the Archived repository and will never be deleted.`)) {
       return;
     }
     setActionLoadingId(id);
     try {
-      await api.quotations.delete(id);
+      await api.quotations.archive(id);
       const updated = quotations.filter(q => q.id !== id);
       setQuotations(updated);
       setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
-      try {
-        sessionStorage.setItem('kmp_cached_quotations', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      setToastMsg({ type: 'success', message: `Quotation ${quotationNumber} deleted successfully!` });
+      setToastMsg({ type: 'success', message: `Quotation ${quotationNumber} moved to Archive!` });
       setTimeout(() => setToastMsg(null), 4000);
     } catch (err: any) {
-      alert(err.message || 'Failed to delete quotation.');
+      alert(err.message || 'Failed to archive quotation.');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleUnarchive = async (id: string, quotationNumber: string) => {
+    setActionLoadingId(id);
+    try {
+      await api.quotations.unarchive(id);
+      const updated = quotations.filter(q => q.id !== id);
+      setQuotations(updated);
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+      setToastMsg({ type: 'success', message: `Quotation ${quotationNumber} restored to Active Quotations!` });
+      setTimeout(() => setToastMsg(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to restore quotation.');
     } finally {
       setActionLoadingId(null);
     }
@@ -144,24 +156,37 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkArchive = async () => {
     if (selectedIds.length === 0) return;
-    if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} selected quotations? This cannot be undone.`)) return;
+    if (!window.confirm(`Archive ${selectedIds.length} selected quotation(s)? They will be safely stored in the Archive tab.`)) return;
     setActionLoadingId('bulk');
     try {
-      await Promise.all(selectedIds.map(id => api.quotations.delete(id).catch(e => console.warn(e))));
+      await Promise.all(selectedIds.map(id => api.quotations.archive(id).catch(e => console.warn(e))));
       const updated = quotations.filter(q => !selectedIds.includes(q.id));
       setQuotations(updated);
-      try {
-        sessionStorage.setItem('kmp_cached_quotations', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      setToastMsg({ type: 'success', message: `${selectedIds.length} quotation(s) deleted successfully!` });
+      setToastMsg({ type: 'success', message: `${selectedIds.length} quotation(s) moved to Archive!` });
       setTimeout(() => setToastMsg(null), 4000);
       setSelectedIds([]);
     } catch (err: any) {
-      alert(err.message || 'Failed to delete selected quotations');
+      alert(err.message || 'Failed to archive selected quotations');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Restore ${selectedIds.length} selected quotation(s) to Active records?`)) return;
+    setActionLoadingId('bulk');
+    try {
+      await Promise.all(selectedIds.map(id => api.quotations.unarchive(id).catch(e => console.warn(e))));
+      const updated = quotations.filter(q => !selectedIds.includes(q.id));
+      setQuotations(updated);
+      setToastMsg({ type: 'success', message: `${selectedIds.length} quotation(s) restored to Active!` });
+      setTimeout(() => setToastMsg(null), 4000);
+      setSelectedIds([]);
+    } catch (err: any) {
+      alert(err.message || 'Failed to restore selected quotations');
     } finally {
       setActionLoadingId(null);
     }
@@ -228,7 +253,7 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
               : 'Quotations Directory'}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Employees can view, edit, and download official records. Deletion is strictly reserved for Super Admin.
+            Employees can view, edit, download, and safely archive official records. Quotations are permanently preserved.
           </p>
         </div>
 
@@ -320,16 +345,49 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
             </div>
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search quotation #, customer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-1 focus:ring-amber-500 focus:bg-white"
-            />
+          {/* Active / Archive Switcher & Search Box */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
+              <button
+                onClick={() => {
+                  setViewMode('active');
+                  setSelectedIds([]);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
+                  viewMode === 'active'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-500" />
+                <span>Active</span>
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('archived');
+                  setSelectedIds([]);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
+                  viewMode === 'archived'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Archive className="w-3.5 h-3.5 text-purple-600" />
+                <span>Archive</span>
+              </button>
+            </div>
+
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search quotation #, customer..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-1 focus:ring-amber-500 focus:bg-white"
+              />
+            </div>
           </div>
         </div>
 
@@ -380,14 +438,25 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
               <CheckCircle2 className="w-4 h-4" />
               <span>{actionLoadingId === 'bulk' ? 'Processing...' : `Approve Selected (${selectedIds.length})`}</span>
             </button>
-            <button
-              onClick={handleBulkDelete}
-              disabled={actionLoadingId === 'bulk'}
-              className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>{actionLoadingId === 'bulk' ? 'Deleting...' : `Delete Selected (${selectedIds.length})`}</span>
-            </button>
+            {viewMode === 'active' ? (
+              <button
+                onClick={handleBulkArchive}
+                disabled={actionLoadingId === 'bulk'}
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <Archive className="w-4 h-4" />
+                <span>{actionLoadingId === 'bulk' ? 'Archiving...' : `Archive Selected (${selectedIds.length})`}</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleBulkRestore}
+                disabled={actionLoadingId === 'bulk'}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>{actionLoadingId === 'bulk' ? 'Restoring...' : `Restore Selected (${selectedIds.length})`}</span>
+              </button>
+            )}
             <button
               onClick={() => setSelectedIds([])}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
@@ -571,16 +640,28 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
                             </span>
                           )}
 
-                          {/* Delete Quotation Button */}
-                          <button
-                            onClick={() => handleDelete(q.id, q.quotation_number)}
-                            disabled={actionLoadingId === q.id}
-                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 font-black text-[10px] rounded-lg flex items-center gap-1 transition-all shadow-2xs cursor-pointer active:scale-95"
-                            title={`Permanently delete quotation ${q.quotation_number}`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            <span>{actionLoadingId === q.id ? 'Deleting...' : 'Delete'}</span>
-                          </button>
+                          {/* Archive / Restore Quotation Button */}
+                          {viewMode === 'active' ? (
+                            <button
+                              onClick={() => handleArchive(q.id, q.quotation_number)}
+                              disabled={actionLoadingId === q.id}
+                              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-white border border-amber-300 hover:border-amber-500 font-black text-[10px] rounded-lg flex items-center gap-1 transition-all shadow-2xs cursor-pointer active:scale-95"
+                              title={`Safely archive quotation ${q.quotation_number}`}
+                            >
+                              <Archive className="w-3 h-3" />
+                              <span>{actionLoadingId === q.id ? 'Archiving...' : 'Archive'}</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUnarchive(q.id, q.quotation_number)}
+                              disabled={actionLoadingId === q.id}
+                              className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-300 hover:border-emerald-600 font-black text-[10px] rounded-lg flex items-center gap-1 transition-all shadow-2xs cursor-pointer active:scale-95"
+                              title={`Restore quotation ${q.quotation_number} to active list`}
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>{actionLoadingId === q.id ? 'Restoring...' : 'Restore'}</span>
+                            </button>
+                          )}
 
                           {/* Edit Button */}
                           <button

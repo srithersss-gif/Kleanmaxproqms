@@ -849,10 +849,10 @@ def _generate_kleanmax_docx(
     
     # 0. A4 Dimensions & Margins
     for sec in doc.sections:
-        sec.top_margin = Inches(0.4)
-        sec.bottom_margin = Inches(0.4)
-        sec.left_margin = Inches(0.6)
-        sec.right_margin = Inches(0.6)
+        sec.top_margin = Inches(0.6)
+        sec.bottom_margin = Inches(0.6)
+        sec.left_margin = Inches(0.8)
+        sec.right_margin = Inches(0.8)
         sec.page_width = Inches(8.27)
         sec.page_height = Inches(11.69)
 

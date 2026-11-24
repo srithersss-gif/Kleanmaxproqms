@@ -34,6 +34,13 @@ def run_seed():
             conn.commit()
     except Exception:
         pass
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE quotations ADD COLUMN is_archived BOOLEAN DEFAULT FALSE"))
+            conn.commit()
+    except Exception:
+        pass
     db = SessionLocal()
 
     try:

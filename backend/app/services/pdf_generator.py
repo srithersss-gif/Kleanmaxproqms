@@ -203,7 +203,21 @@ def render_quotation_html(
             setattr(itm, 'resolved_image_uri', resolved_uri)
             processed_items.append(itm)
 
+    is_km_cleaning_proposal = (
+        company_code == 'kleanmax' and
+        quotation.quotation_type not in ['item_based', 'repair_service', 'rental', 'sales'] and
+        (not snapshot.get('machineName')) and
+        ('CLEANING' in (quotation.job_description or '').upper() or
+         'PROPOSAL' in (quotation.job_description or '').upper() or
+         snapshot.get('scopeTitle') or
+         snapshot.get('cleanableSqft') or
+         snapshot.get('scopeText') or
+         snapshot.get('quotationTitle') or
+         snapshot.get('docSubtitle'))
+    )
+
     html_content = template.render(
+        is_km_cleaning_proposal=is_km_cleaning_proposal,
         snapshot=snapshot,
         subtotal_val=subtotal_val,
         tax_rate_val=tax_rate_val,

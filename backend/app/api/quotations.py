@@ -99,6 +99,7 @@ def get_quotations(
     status: Optional[str] = Query(None, description="Filter by status: draft, pending_approval, approved, issued, revised, cancelled"),
     company_code: Optional[str] = Query(None, description="Filter by company_code: kleanmaxpro, kleanmax, uniquepainters, cleantech"),
     customer_id: Optional[str] = Query(None),
+    show_archived: bool = Query(False, description="Whether to show archived quotations"),
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
     limit: int = Query(100, ge=1, le=500),
@@ -118,6 +119,14 @@ def get_quotations(
             defer(Quotation.notes),
         )
     )
+
+    if show_archived:
+        query = query.filter(or_(Quotation.is_archived == True, Quotation.status == 'archived'))
+    else:
+        query = query.filter(and_(
+            or_(Quotation.is_archived == False, Quotation.is_archived == None),
+            Quotation.status != 'archived'
+        ))
 
     if search:
         search_pattern = f"%{search.strip()}%"
@@ -377,21 +386,41 @@ def delete_quotation_endpoint(
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user)
 ):
-    """Delete a quotation and all its associated items, sections, and revisions."""
+    """Archive a quotation safely without dropping any records from the database."""
     quotation = db.query(Quotation).filter(Quotation.id == id).first()
     if not quotation:
         raise HTTPException(status_code=404, detail="Quotation not found")
 
-    # Safely clear parent/previous references to this quotation
-    db.query(Quotation).filter(Quotation.parent_quotation_id == id).update({"parent_quotation_id": None}, synchronize_session=False)
-    db.query(QuotationRevision).filter(QuotationRevision.previous_quotation_id == id).update({"previous_quotation_id": None}, synchronize_session=False)
-
-    # Clean up associated items, sections, and revisions
-    db.query(QuotationItem).filter(QuotationItem.quotation_id == id).delete(synchronize_session=False)
-    db.query(QuotationSection).filter(QuotationSection.quotation_id == id).delete(synchronize_session=False)
-    db.query(QuotationRevision).filter(QuotationRevision.quotation_id == id).delete(synchronize_session=False)
-    
-    db.delete(quotation)
+    quotation.is_archived = True
+    quotation.status = "archived"
     db.commit()
 
-    return {"message": "Quotation deleted successfully", "id": id}
+    return {"message": "Quotation archived successfully", "id": id, "status": "archived"}
+
+
+@router.post("/{id}/archive")
+def archive_quotation_endpoint(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user)
+):
+    """Archive a quotation safely without dropping any records from the database."""
+    return delete_quotation_endpoint(id, db, current_user)
+
+
+@router.post("/{id}/unarchive")
+def unarchive_quotation_endpoint(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: Profile = Depends(get_current_user)
+):
+    """Restore an archived quotation to active status."""
+    quotation = db.query(Quotation).filter(Quotation.id == id).first()
+    if not quotation:
+        raise HTTPException(status_code=404, detail="Quotation not found")
+
+    quotation.is_archived = False
+    quotation.status = "draft"
+    db.commit()
+
+    return {"message": "Quotation restored successfully", "id": id, "status": "draft"}

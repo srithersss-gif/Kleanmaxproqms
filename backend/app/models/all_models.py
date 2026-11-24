@@ -152,7 +152,8 @@ class Quotation(Base):
     parent_quotation_id = Column(GUID, ForeignKey("quotations.id"), nullable=True)
     customer_id = Column(GUID, ForeignKey("customers.id"), nullable=False)
     quotation_type = Column(String(50), nullable=False, default="area_based")
-    status = Column(String(50), nullable=False, default="draft")  # draft, pending_approval, approved, issued, revised, cancelled
+    status = Column(String(50), nullable=False, default="draft")  # draft, pending_approval, approved, issued, revised, cancelled, archived
+    is_archived = Column(Boolean, nullable=False, default=False, index=True)
     quotation_date = Column(Date, nullable=False, default=date.today)
     validity_date = Column(Date, nullable=False)
     customer_ref = Column(String(100), nullable=True)

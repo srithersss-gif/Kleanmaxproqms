@@ -135,12 +135,13 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
-    list: (params: { search?: string; status?: string; customer_id?: string; company_code?: string; limit?: number } = {}) => {
+    list: (params: { search?: string; status?: string; customer_id?: string; company_code?: string; limit?: number; show_archived?: boolean } = {}) => {
       const q = new URLSearchParams();
       if (params.search) q.append('search', params.search);
       if (params.status) q.append('status', params.status);
       if (params.customer_id) q.append('customer_id', params.customer_id);
       if (params.company_code) q.append('company_code', params.company_code);
+      if (params.show_archived) q.append('show_archived', 'true');
       if (params.limit !== undefined) q.append('limit', String(params.limit));
       return request<Quotation[]>(`/quotations?${q.toString()}`);
     },
@@ -157,7 +158,9 @@ export const api = {
     approve: (id: string) => request<Quotation>(`/quotations/${id}/approve`, { method: 'POST' }),
     issue: (id: string) => request<Quotation>(`/quotations/${id}/issue`, { method: 'POST' }),
     cancel: (id: string) => request<Quotation>(`/quotations/${id}/cancel`, { method: 'POST' }),
-    delete: (id: string) => request<{ message: string; id: string }>(`/quotations/${id}`, { method: 'DELETE' }),
+    archive: (id: string) => request<{ message: string; id: string; status: string }>(`/quotations/${id}/archive`, { method: 'POST' }),
+    unarchive: (id: string) => request<{ message: string; id: string; status: string }>(`/quotations/${id}/unarchive`, { method: 'POST' }),
+    delete: (id: string) => request<{ message: string; id: string; status: string }>(`/quotations/${id}`, { method: 'DELETE' }),
     revise: (id: string, reason: string) => request<Quotation>(`/quotations/${id}/revise`, {
       method: 'POST',
       body: JSON.stringify({ revision_reason: reason }),
