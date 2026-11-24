@@ -1,5 +1,6 @@
 import os
 import io
+import re
 from pathlib import Path
 from decimal import Decimal
 
@@ -589,10 +590,11 @@ def _generate_uniquepainters_docx(
     # Call Notice Box (Toggleable: disappears if include_note is false)
     if snapshot.get("include_note") is not False:
         call_notice = snapshot.get("callNotice") or getattr(quotation, "notes", None) or "Looking forward for your favourable orders. Please call - 9500065813 / 9710148218."
+        clean_call = re.sub(r'<br\s*/?>', '\n', str(call_notice)).strip()
         p_call = doc.add_paragraph()
         p_call.paragraph_format.space_before = Pt(8)
         p_call.paragraph_format.space_after = Pt(10)
-        r = p_call.add_run(call_notice)
+        r = p_call.add_run(clean_call)
         r.bold = True
         r.font.size = Pt(9)
         r.font.name = "Arial"
@@ -1177,14 +1179,16 @@ def _generate_kleanmax_docx(
     if snapshot.get("include_note") is not False:
         km_note = snapshot.get("notes_text") or (getattr(quotation, "notes", None) if getattr(quotation, "notes", None) != scope_text else None)
         if km_note:
-            p_km_note = doc.add_paragraph()
-            p_km_note.paragraph_format.space_before = Pt(6)
-            p_km_note.paragraph_format.space_after = Pt(4)
-            r = p_km_note.add_run(km_note)
-            r.bold = True
-            r.font.name = "Arial"
-            r.font.size = Pt(8.5)
-            r.font.color.rgb = RGBColor(15, 23, 42)
+            clean_km_note = re.sub(r'<br\s*/?>', '\n', str(km_note)).strip()
+            if clean_km_note:
+                p_km_note = doc.add_paragraph()
+                p_km_note.paragraph_format.space_before = Pt(6)
+                p_km_note.paragraph_format.space_after = Pt(4)
+                r = p_km_note.add_run(clean_km_note)
+                r.bold = True
+                r.font.name = "Arial"
+                r.font.size = Pt(8.5)
+                r.font.color.rgb = RGBColor(15, 23, 42)
 
     # ===== PAGE 4: BANK DETAILS, TERMS & THANK YOU =====
     doc.add_page_break()
@@ -1314,14 +1318,16 @@ def generate_quotation_docx_bytes(
     is_km_cleaning_proposal = (
         company_code == 'kleanmax'
         and getattr(quotation, 'quotation_type', '') not in ['item_based', 'repair_service', 'rental', 'sales']
-        and (not items_list or len(items_list) == 0)
-        and (not snapshot.get('items') or len(snapshot.get('items')) == 0)
         and not snapshot.get('machineName')
         and (
             'WILSTON' in (getattr(quotation, 'job_description', '') or '').upper()
             or 'CLEANING' in (getattr(quotation, 'job_description', '') or '').upper()
+            or 'PROPOSAL' in (getattr(quotation, 'job_description', '') or '').upper()
             or snapshot.get('scopeTitle')
             or snapshot.get('cleanableSqft')
+            or snapshot.get('scopeText')
+            or snapshot.get('quotationTitle')
+            or snapshot.get('docSubtitle')
         )
     )
     if is_km_cleaning_proposal:
@@ -1509,24 +1515,30 @@ def generate_quotation_docx_bytes(
             r_name = p_desc.add_run(itm.item_name)
             r_name.bold = True
             r_name.font.size = Pt(8.5)
-            if itm.description:
-                p_desc.add_run(f"\n{itm.description}").font.size = Pt(7.5)
+            if getattr(itm, 'description', None):
+                clean_itm_desc = re.sub(r'<br\s*/?>', '\n', str(itm.description)).strip()
+                if clean_itm_desc:
+                    p_desc.add_run(f"\n{clean_itm_desc}").font.size = Pt(7.5)
 
-            # Embed machine or uploaded image if available
+            # Embed machine or uploaded image if available and NOT standard layout
+            table_layout = snapshot.get('tableLayout')
+            is_standard_layout = (table_layout == 'standard')
             img_to_embed = None
-            itm_img_val = getattr(itm, 'image_url', None) or (itm.get('image_url') if isinstance(itm, dict) else None)
-            if itm_img_val:
-                img_to_embed = itm_img_val
-            elif idx == 1 and getattr(quotation, 'image_url', None):
-                img_to_embed = quotation.image_url
-            elif 'KARCHER' in itm.item_name.upper() or 'SCRUBBER' in itm.item_name.upper():
-                img_to_embed = str(STATIC_DIR / "karcher_scrubber.png")
-            elif 'RB-800' in itm.item_name.upper() or '800' in itm.item_name:
-                img_to_embed = str(STATIC_DIR / "products" / "rb800.png")
-            elif 'RB-650' in itm.item_name.upper() or '650' in itm.item_name:
-                img_to_embed = str(STATIC_DIR / "products" / "rb650.png")
-            elif 'BD-50' in itm.item_name.upper() or 'BD50' in itm.item_name.upper():
-                img_to_embed = str(STATIC_DIR / "products" / "bd5050.png")
+            if not is_standard_layout:
+                itm_img_val = getattr(itm, 'image_url', None) or (itm.get('image_url') if isinstance(itm, dict) else None)
+                if itm_img_val:
+                    img_to_embed = itm_img_val
+                elif idx == 1 and getattr(quotation, 'image_url', None):
+                    img_to_embed = quotation.image_url
+                elif table_layout == 'with_images':
+                    if 'KARCHER' in itm.item_name.upper() or 'SCRUBBER' in itm.item_name.upper():
+                        img_to_embed = str(STATIC_DIR / "karcher_scrubber.png")
+                    elif 'RB-800' in itm.item_name.upper() or '800' in itm.item_name:
+                        img_to_embed = str(STATIC_DIR / "products" / "rb800.png")
+                    elif 'RB-650' in itm.item_name.upper() or '650' in itm.item_name:
+                        img_to_embed = str(STATIC_DIR / "products" / "rb650.png")
+                    elif 'BD-50' in itm.item_name.upper() or 'BD50' in itm.item_name.upper():
+                        img_to_embed = str(STATIC_DIR / "products" / "bd5050.png")
 
             if img_to_embed:
                 stream = _load_image_stream(img_to_embed)
@@ -1696,15 +1708,17 @@ def generate_quotation_docx_bytes(
     # Note above terms (Toggleable: omitted if include_note is false)
     include_note_flag = snapshot.get("include_note") is not False
     std_note = snapshot.get("notes_text") or getattr(quotation, "notes", None)
-    if include_note_flag and std_note and std_note.strip():
-        p_note_box = doc.add_paragraph()
-        p_note_box.paragraph_format.space_before = Pt(6)
-        p_note_box.paragraph_format.space_after = Pt(2)
-        r_nh = p_note_box.add_run(std_note.strip())
-        r_nh.bold = True
-        r_nh.font.name = "Arial"
-        r_nh.font.size = Pt(8)
-        r_nh.font.color.rgb = RGBColor(15, 23, 42)
+    if include_note_flag and std_note and str(std_note).strip():
+        clean_std_note = re.sub(r'<br\s*/?>', '\n', str(std_note)).strip()
+        if clean_std_note:
+            p_note_box = doc.add_paragraph()
+            p_note_box.paragraph_format.space_before = Pt(6)
+            p_note_box.paragraph_format.space_after = Pt(2)
+            r_nh = p_note_box.add_run(clean_std_note)
+            r_nh.bold = True
+            r_nh.font.name = "Arial"
+            r_nh.font.size = Pt(8)
+            r_nh.font.color.rgb = RGBColor(15, 23, 42)
 
     doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
@@ -1796,11 +1810,11 @@ def generate_quotation_docx_bytes(
     default_branch = 'Chennai - Iyyapanthangal' if 'cleantech' in company_code else ('ASHOK NAGAR' if 'kleanmax' in company_code else 'PORUR')
     default_ifsc = 'IDFB0081831' if 'cleantech' in company_code else ('KVBL0001278' if 'kleanmax' in company_code else 'ICIC0000275')
 
-    holder = (getattr(company, 'bank_account_name', None) or getattr(company, 'company_name', None) or default_holder).upper()
-    bank_name = getattr(company, 'bank_name', None) or default_bank
-    bank_acc = getattr(company, 'bank_account_no', None) or default_acc
-    bank_branch = getattr(company, 'bank_branch', None) or default_branch
-    bank_ifsc = getattr(company, 'bank_ifsc', None) or default_ifsc
+    holder = (snapshot.get('bankAccountName') or getattr(company, 'bank_account_name', None) or getattr(company, 'company_name', None) or default_holder).upper()
+    bank_name = snapshot.get('bankName') or getattr(company, 'bank_name', None) or default_bank
+    bank_acc = snapshot.get('bankAccountNo') or getattr(company, 'bank_account_no', None) or default_acc
+    bank_branch = snapshot.get('bankBranch') or getattr(company, 'bank_branch', None) or default_branch
+    bank_ifsc = snapshot.get('bankIfsc') or getattr(company, 'bank_ifsc', None) or default_ifsc
 
     bank_text = (
         f"• A/c Holder: {holder}\n"

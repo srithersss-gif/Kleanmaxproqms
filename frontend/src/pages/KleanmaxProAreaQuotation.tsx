@@ -443,6 +443,11 @@ Recovery / Dirty Water Tank: 100 L`,
               }
               if (snap.signatoryName) setSignatoryName(snap.signatoryName);
               if (snap.signatoryDesignation) setSignatoryDesignation(snap.signatoryDesignation);
+              if (snap.bankAccountName) setBankAccountName(snap.bankAccountName);
+              if (snap.bankName) setBankName(snap.bankName);
+              if (snap.bankAccountNo) setBankAccountNo(snap.bankAccountNo);
+              if (snap.bankBranch) setBankBranch(snap.bankBranch);
+              if (snap.bankIfsc) setBankIfsc(snap.bankIfsc);
             }
 
             if (q.signatory_phone) setSignatoryPhone(q.signatory_phone);
@@ -811,6 +816,11 @@ Recovery / Dirty Water Tank: 100 L`,
         signatoryDesignation,
         signatoryPhone,
         sigPhone: signatoryPhone,
+        bankAccountName,
+        bankName,
+        bankAccountNo,
+        bankBranch,
+        bankIfsc,
       };
 
       // Use first item with an image_url as quotation-level image

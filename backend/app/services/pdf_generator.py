@@ -164,33 +164,37 @@ def render_quotation_html(
     if (not source_items) and snapshot.get('items'):
         source_items = snapshot['items']
 
+    table_layout = snapshot.get('tableLayout')
+    is_standard_layout = (table_layout == 'standard')
+
     processed_items = []
     for itm in source_items:
         itm_img = None
-        if isinstance(itm, dict):
-            itm_img = itm.get('image_url')
-            name = itm.get('item_name') or ''
-        else:
-            itm_img = getattr(itm, 'image_url', None)
-            name = getattr(itm, 'item_name', '') or ''
-        
-        # Check item image_url first, then fallback to quotation.image_url for the first item
-        if not itm_img and quotation and getattr(quotation, 'image_url', None) and len(processed_items) == 0:
-            itm_img = getattr(quotation, 'image_url')
+        if not is_standard_layout:
+            if isinstance(itm, dict):
+                itm_img = itm.get('image_url')
+                name = itm.get('item_name') or ''
+            else:
+                itm_img = getattr(itm, 'image_url', None)
+                name = getattr(itm, 'item_name', '') or ''
+            
+            # Check item image_url first, then fallback to quotation.image_url for the first item
+            if not itm_img and quotation and getattr(quotation, 'image_url', None) and len(processed_items) == 0:
+                itm_img = getattr(quotation, 'image_url')
 
-        # If no explicit image_url, detect product machine image by name
-        if not itm_img and name:
-            nm = name.upper()
-            if 'KARCHER' in nm or 'SCRUBBER' in nm:
-                itm_img = "/karcher_scrubber.png"
-            elif 'RB-800' in nm or '800' in nm:
-                itm_img = "/products/rb800.png"
-            elif 'RB-650' in nm or '650' in nm:
-                itm_img = "/products/rb650.png"
-            elif 'BD-50' in nm or 'BD50' in nm:
-                itm_img = "/products/bd5050.png"
+            # If no explicit image_url and layout supports images, detect product machine image by name
+            if not itm_img and name and table_layout == 'with_images':
+                nm = name.upper()
+                if 'KARCHER' in nm or 'SCRUBBER' in nm:
+                    itm_img = "/karcher_scrubber.png"
+                elif 'RB-800' in nm or '800' in nm:
+                    itm_img = "/products/rb800.png"
+                elif 'RB-650' in nm or '650' in nm:
+                    itm_img = "/products/rb650.png"
+                elif 'BD-50' in nm or 'BD50' in nm:
+                    itm_img = "/products/bd5050.png"
 
-        resolved_uri = resolve_image_to_data_uri(itm_img)
+        resolved_uri = resolve_image_to_data_uri(itm_img) if itm_img else None
         if isinstance(itm, dict):
             itm_dict = dict(itm)
             itm_dict['resolved_image_uri'] = resolved_uri
