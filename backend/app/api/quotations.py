@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session, joinedload, defer
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from typing import List, Optional
 from datetime import date
 from backend.app.core.database import get_db
