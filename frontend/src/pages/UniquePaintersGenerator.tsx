@@ -717,11 +717,13 @@ export const UniquePaintersGenerator: React.FC<UniquePaintersGeneratorProps> = (
       let res;
       if (savedQuoteId) {
         res = await api.quotations.update(savedQuoteId, payload);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} updated and saved to DB successfully!`);
       } else {
         res = await api.quotations.create(payload);
         setSavedQuoteId(res.id);
         setIsEditMode(true);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} saved to DB successfully!`);
       }
       return res.id;
@@ -762,8 +764,8 @@ export const UniquePaintersGenerator: React.FC<UniquePaintersGeneratorProps> = (
     }
   };
 
-  const handleOpenA4Preview = () => {
-    // Immediate React live preview without latency or caching
+  const handleOpenA4Preview = async () => {
+    await handleSaveToDatabase();
     setInPagePreviewOpen(true);
   };
 

@@ -455,14 +455,21 @@ Recovery / Dirty Water Tank: 100 L`,
             if (q.signatory_designation) setSignatoryDesignation(q.signatory_designation);
 
             if (q.customer) {
-              setCustomerName(q.customer.company_name || '');
-              setAddressLine1(q.customer.billing_address_line1 || '');
-              setAddressLine2(`${q.customer.billing_city || ''} ${q.customer.billing_pincode ? `- ${q.customer.billing_pincode}` : ''}`.trim());
-              setContactPerson(q.customer.contact_person || '');
-              setPhone(q.customer.phone || '');
+              setCustomerName(snap?.customerName || q.customer.company_name || '');
+              setAddressLine1(snap?.addressLine1 || q.customer.billing_address_line1 || '');
+              setAddressLine2(snap?.addressLine2 || `${q.customer.billing_city || ''} ${q.customer.billing_pincode ? `- ${q.customer.billing_pincode}` : ''}`.trim());
+              setContactPerson(snap?.contactPerson || snap?.attentionPerson || q.customer.contact_person || '');
+              setPhone(snap?.phone || snap?.clientPhone || q.customer.phone || '');
               setEmail(q.customer.email || '');
-              setGstin(q.customer.gstin || '');
+              setGstin(snap?.gstin || snap?.clientGstin || q.customer.gstin || '');
               setSelectedCustomerId(q.customer.id);
+            } else if (snap) {
+              if (snap.customerName) setCustomerName(snap.customerName);
+              if (snap.addressLine1) setAddressLine1(snap.addressLine1);
+              if (snap.addressLine2) setAddressLine2(snap.addressLine2);
+              if (snap.contactPerson || snap.attentionPerson) setContactPerson(snap.contactPerson || snap.attentionPerson);
+              if (snap.phone || snap.clientPhone) setPhone(snap.phone || snap.clientPhone);
+              if (snap.gstin || snap.clientGstin) setGstin(snap.gstin || snap.clientGstin);
             }
 
             if (snap && Array.isArray(snap.items) && snap.items.length > 0) {
@@ -793,6 +800,13 @@ Recovery / Dirty Water Tank: 100 L`,
         })),
         columnHeaders,
         quotation_title: quotationTitle,
+        quotationNo: quotationNo.trim() || 'KMP/0001',
+        customerName,
+        addressLine1,
+        addressLine2,
+        contactPerson,
+        phone,
+        gstin,
         about_us: aboutUs,
         include_note: includeNote,
         notes_text: notes,
@@ -866,11 +880,13 @@ Recovery / Dirty Water Tank: 100 L`,
       let res;
       if (savedQuoteId) {
         res = await api.quotations.update(savedQuoteId, payload);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} updated and saved to DB successfully!`);
       } else {
         res = await api.quotations.create(payload);
         setSavedQuoteId(res.id);
         setIsEditMode(true);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} saved to DB successfully!`);
       }
       return res.id;

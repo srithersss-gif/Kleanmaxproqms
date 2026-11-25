@@ -102,7 +102,7 @@ def get_quotations(
     show_archived: bool = Query(False, description="Whether to show archived quotations"),
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(500, ge=1, le=2000),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: Profile = Depends(get_current_user)
@@ -155,7 +155,7 @@ def get_quotations(
     if to_date:
         query = query.filter(Quotation.quotation_date <= to_date)
 
-    quotations = query.order_by(Quotation.created_at.desc()).offset(offset).limit(limit).all()
+    quotations = query.order_by(Quotation.created_at.desc(), Quotation.quotation_date.desc()).offset(offset).limit(limit).all()
 
     # Populate helper fields for response
     results = []

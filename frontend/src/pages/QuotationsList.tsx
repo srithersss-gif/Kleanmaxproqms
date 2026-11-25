@@ -16,10 +16,10 @@ interface QuotationsListProps {
 }
 
 export const getQuotationCompany = (q: Quotation): 'kleanmaxpro' | 'kleanmax' | 'uniquepainters' | 'cleantech' => {
-  const code = (q.company_code || '').toLowerCase().trim();
+  const code = (q.company_code || '').toLowerCase().replace(/[\s_-]+/g, '').trim();
   if (code === 'cleantech' || code === 'cts') return 'cleantech';
   if (code === 'uniquepainters' || code === 'unp') return 'uniquepainters';
-  if (code === 'kleanmax' || code === 'klm') return 'kleanmax';
+  if (code === 'kleanmax' || code === 'klm' || code === 'km') return 'kleanmax';
   if (code === 'kleanmaxpro' || code === 'kmp') return 'kleanmaxpro';
 
   // Fallback to quotation number prefix
@@ -41,7 +41,7 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
   // Instant load from session cache (0ms)
   const [quotations, setQuotations] = useState<Quotation[]>(() => {
     try {
-      const cached = sessionStorage.getItem('kmp_cached_quotations');
+      const cached = sessionStorage.getItem('kmp_cached_quotations_active');
       return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
@@ -49,7 +49,7 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
   });
   const [loading, setLoading] = useState<boolean>(() => {
     try {
-      return !sessionStorage.getItem('kmp_cached_quotations');
+      return !sessionStorage.getItem('kmp_cached_quotations_active');
     } catch {
       return true;
     }
@@ -66,17 +66,24 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
 
   useEffect(() => {
     setBrandFilter(defaultBrandFilter);
+    setViewMode('active');
+    setStatusFilter('all');
+    setSearchTerm('');
+    setSelectedIds([]);
   }, [defaultBrandFilter]);
 
-  // Load fresh quotations from API on mount or viewMode change
+  // Load fresh quotations from API on mount, viewMode change, or division page change
   useEffect(() => {
+    if (viewMode === 'archived') {
+      setStatusFilter('all');
+    }
     loadQuotations(false, viewMode);
-  }, [viewMode]);
+  }, [viewMode, defaultBrandFilter]);
 
   const loadQuotations = async (silent = false, mode = viewMode) => {
     if (!silent && quotations.length === 0) setLoading(true);
     try {
-      const data = await api.quotations.list({ show_archived: mode === 'archived' });
+      const data = await api.quotations.list({ show_archived: mode === 'archived', limit: 500 });
       setQuotations(data);
       try {
         sessionStorage.setItem(`kmp_cached_quotations_${mode}`, JSON.stringify(data));

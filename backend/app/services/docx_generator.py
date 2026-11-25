@@ -244,7 +244,7 @@ def _generate_uniquepainters_docx(
         else:
             q_date = str(raw_d) if raw_d else "21/10/2025"
 
-    q_num = snapshot.get("quotationNo") or getattr(quotation, "quotation_number", None) or "UNP/2026/001"
+    q_num = getattr(quotation, "quotation_number", None) or snapshot.get("quotationNo") or "UNP/2026/001"
 
     r = p_date.add_run("DATE: ")
     r.bold = True
@@ -1402,22 +1402,31 @@ def generate_quotation_docx_bytes(
     r_to_label = p_to.add_run("TO :\n")
     r_to_label.bold = True
     r_to_label.font.size = Pt(9.5)
-    r_to_name = p_to.add_run(f"{(customer.company_name if customer else 'Valued Client').upper()}\n")
+    to_name = snapshot.get("customerName") or (customer.company_name if customer else "Valued Client")
+    r_to_name = p_to.add_run(f"{str(to_name).upper()}\n")
     r_to_name.bold = True
     r_to_name.font.size = Pt(10.5)
 
-    if customer and getattr(customer, 'contact_person', None):
-        r_attn = p_to.add_run(f"ATTN: {customer.contact_person}\n")
+    to_attn = snapshot.get("contactPerson") or snapshot.get("attentionPerson") or (getattr(customer, 'contact_person', None) if customer else None)
+    if to_attn:
+        r_attn = p_to.add_run(f"ATTN: {to_attn}\n")
         r_attn.font.size = Pt(9)
-    if customer and getattr(customer, 'phone', None):
-        r_ph = p_to.add_run(f"Contact: {customer.phone}\n")
+    to_phone = snapshot.get("phone") or snapshot.get("clientPhone") or (getattr(customer, 'phone', None) if customer else None)
+    if to_phone:
+        r_ph = p_to.add_run(f"Contact: {to_phone}\n")
         r_ph.font.size = Pt(9)
-    if customer and getattr(customer, 'gstin', None):
-        r_gst = p_to.add_run(f"GSTIN: {customer.gstin}\n")
+    to_gstin = snapshot.get("gstin") or snapshot.get("clientGstin") or (getattr(customer, 'gstin', None) if customer else None)
+    if to_gstin:
+        r_gst = p_to.add_run(f"GSTIN: {to_gstin}\n")
         r_gst.font.size = Pt(9)
-    if customer and getattr(customer, 'billing_address_line1', None):
-        addr = f"{customer.billing_address_line1}, {getattr(customer, 'billing_city', '') or ''} - {getattr(customer, 'billing_pincode', '') or ''}"
+    to_addr1 = snapshot.get("addressLine1") or (getattr(customer, 'billing_address_line1', None) if customer else None)
+    to_addr2 = snapshot.get("addressLine2") or (getattr(customer, 'billing_city', None) if customer else None)
+    if to_addr1:
+        addr = f"{to_addr1}, {to_addr2}" if to_addr2 else str(to_addr1)
         r_addr = p_to.add_run(f"Address: {addr}")
+        r_addr.font.size = Pt(8.5)
+    elif to_addr2:
+        r_addr = p_to.add_run(f"Address: {to_addr2}")
         r_addr.font.size = Pt(8.5)
 
     # Quotation details (Right)

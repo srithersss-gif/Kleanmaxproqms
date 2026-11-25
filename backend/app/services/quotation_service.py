@@ -188,6 +188,27 @@ def create_quotation(
     saved_final = data.final_amount if (getattr(data, 'final_amount', None) is not None and data.final_amount > 0) else calc_res.final_amount
     saved_words = number_to_indian_currency_words(saved_final) if (getattr(data, 'final_amount', None) is not None and data.final_amount > 0) else calc_res.amount_in_words
 
+    raw_snap = getattr(data, 'snapshot_json', None)
+    snap_dict = None
+    if isinstance(raw_snap, dict):
+        snap_dict = dict(raw_snap)
+    elif isinstance(raw_snap, str):
+        try:
+            import json
+            parsed = json.loads(raw_snap)
+            if isinstance(parsed, dict):
+                snap_dict = parsed
+        except Exception:
+            snap_dict = None
+    if snap_dict is not None:
+        snap_dict['quotationNo'] = quotation_number
+        snap_dict['quotationNumber'] = quotation_number
+        if getattr(data, 'client_name', None) and not snap_dict.get('customerName'):
+            snap_dict['customerName'] = data.client_name.strip()
+        if getattr(data, 'client_address', None) and not snap_dict.get('addressLine1'):
+            snap_dict['addressLine1'] = data.client_address.strip()
+        raw_snap = snap_dict if isinstance(raw_snap, dict) else json.dumps(snap_dict)
+
     quotation = Quotation(
         company_code=data.company_code or (company.company_code if company else "kleanmaxpro"),
         quotation_number=quotation_number,
@@ -223,7 +244,7 @@ def create_quotation(
         rounding_adjustment=calc_res.rounding_adjustment,
         final_amount=saved_final,
         amount_in_words=saved_words,
-        snapshot_json=getattr(data, 'snapshot_json', None),
+        snapshot_json=raw_snap,
         image_url=getattr(data, 'image_url', None),
         signatory_name=getattr(data, 'signatory_name', None) or (company.signatory_name if company and hasattr(company, 'signatory_name') else 'Mr. Manikandan Balamurugan'),
         signatory_designation=getattr(data, 'signatory_designation', None) or (company.signatory_designation if company and hasattr(company, 'signatory_designation') else 'Sales and Service Head'),
@@ -352,6 +373,16 @@ def update_quotation(
             customer.contact_person = data.attention_person.strip()
     if data.company_code:
         quotation.company_code = data.company_code
+    if getattr(data, 'quotation_number', None) and data.quotation_number.strip():
+        new_q_num = data.quotation_number.strip()
+        if new_q_num != quotation.quotation_number:
+            conflict = db.query(Quotation.id).filter(
+                Quotation.quotation_number == new_q_num,
+                Quotation.revision_number == quotation.revision_number,
+                Quotation.id != quotation.id
+            ).first()
+            if not conflict:
+                quotation.quotation_number = new_q_num
 
     company = None
     if quotation.company_code:
@@ -525,7 +556,21 @@ def update_quotation(
     if hasattr(data, 'image_url') and data.image_url is not None:
         quotation.image_url = data.image_url
     if hasattr(data, 'snapshot_json') and data.snapshot_json is not None:
-        quotation.snapshot_json = _serialize_for_snapshot(data.snapshot_json)
+        snap_val = _serialize_for_snapshot(data.snapshot_json)
+        if isinstance(snap_val, dict):
+            snap_val['quotationNo'] = quotation.quotation_number
+            snap_val['quotationNumber'] = quotation.quotation_number
+        elif isinstance(snap_val, str):
+            try:
+                import json
+                parsed = json.loads(snap_val)
+                if isinstance(parsed, dict):
+                    parsed['quotationNo'] = quotation.quotation_number
+                    parsed['quotationNumber'] = quotation.quotation_number
+                    snap_val = json.dumps(parsed)
+            except Exception:
+                pass
+        quotation.snapshot_json = snap_val
     if hasattr(data, 'terms_and_conditions') and data.terms_and_conditions is not None:
         quotation.terms_and_conditions = data.terms_and_conditions
     if hasattr(data, 'signatory_name') and data.signatory_name is not None:

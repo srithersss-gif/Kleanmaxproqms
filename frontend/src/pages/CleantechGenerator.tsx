@@ -923,11 +923,13 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
       let res;
       if (savedQuoteId) {
         res = await api.quotations.update(savedQuoteId, payload);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} updated and saved to DB successfully!`);
       } else {
         res = await api.quotations.create(payload);
         setSavedQuoteId(res.id);
         setIsEditMode(true);
+        if (res.quotation_number) setQuotationNo(res.quotation_number);
         setToastMsg(`Quotation ${res.quotation_number} created and saved to DB successfully!`);
       }
       return res.id;

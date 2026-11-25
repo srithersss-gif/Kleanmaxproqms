@@ -109,6 +109,7 @@ class QuotationCreate(BaseModel):
 
 class QuotationUpdate(BaseModel):
     company_code: Optional[str] = None
+    quotation_number: Optional[str] = None
     customer_id: Optional[str] = None
     quotation_type: Optional[str] = None
     quotation_date: Optional[date] = None

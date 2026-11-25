@@ -507,11 +507,13 @@ export const KleanmaxGenerator: React.FC<KleanmaxGeneratorProps> = ({
       let res;
       if (savedQuotationId) {
         res = await api.quotations.update(savedQuotationId, payload);
+        if (res.quotation_number) setQuotationNumber(res.quotation_number);
         setSuccessMessage(`Quotation ${res.quotation_number} updated and saved to DB!`);
       } else {
         res = await api.quotations.create(payload);
         setSavedQuotationId(res.id);
         setIsEditMode(true);
+        if (res.quotation_number) setQuotationNumber(res.quotation_number);
         setSuccessMessage(`Quotation ${res.quotation_number} created and saved to DB!`);
       }
 

@@ -758,7 +758,7 @@
                             <strong>DATE:</strong> {{ snapshot.quotationDate or (quotation.quotation_date.strftime('%d/%m/%Y') if (quotation.quotation_date and quotation.quotation_date.strftime is defined) else quotation.quotation_date or '21/10/2025') }}
                         </div>
                         <div class="unp-meta-line" style="color: #0f172a;">
-                            <strong>QUOTATION NO:</strong> {{ snapshot.quotationNo or quotation.quotation_number or 'UNP/2026/001' }}
+                            <strong>QUOTATION NO:</strong> {{ quotation.quotation_number or snapshot.quotationNo or 'UNP/2026/001' }}
                         </div>
                     </td>
                 </tr>
@@ -935,7 +935,7 @@
                 {{ snapshot.sigCompany or company.company_name or 'Unique Painters' }}
             </span>
             <span style="font-size: 8.5pt; font-weight: 700; color: #475569;">
-                Quotation No: {{ snapshot.quotationNo or quotation.quotation_number or 'UNP/2026/001' }} • Page 2
+                Quotation No: {{ quotation.quotation_number or snapshot.quotationNo or 'UNP/2026/001' }} • Page 2
             </span>
         </div>
 
@@ -1325,14 +1325,21 @@
         <tr>
             <td class="meta-to">
                 <div class="meta-to-label">To :-</div>
-                <div class="meta-to-name">{{ customer.company_name }}</div>
-                {% if customer.billing_address_line1 %}
-                <div>{{ customer.billing_address_line1 }}{% if customer.billing_city %}, {{ customer.billing_city }}{% endif %}</div>
-                {% elif customer.billing_city %}
-                <div>{{ customer.billing_city }}.</div>
+                <div class="meta-to-name">{{ snapshot.customerName or (customer.company_name if customer else '') }}</div>
+                {% set display_addr1 = snapshot.addressLine1 or (customer.billing_address_line1 if customer else '') %}
+                {% set display_addr2 = snapshot.addressLine2 or (customer.billing_city if customer else '') %}
+                {% if display_addr1 %}
+                <div>{{ display_addr1 }}{% if display_addr2 %}, {{ display_addr2 }}{% endif %}</div>
+                {% elif display_addr2 %}
+                <div>{{ display_addr2 }}.</div>
                 {% endif %}
-                {% if customer.phone %}
-                <div>Ph: {{ customer.phone }}</div>
+                {% set display_attn = snapshot.contactPerson or snapshot.attentionPerson or (customer.contact_person if customer else '') %}
+                {% if display_attn %}
+                <div>Attn: {{ display_attn }}</div>
+                {% endif %}
+                {% set display_phone = snapshot.phone or snapshot.clientPhone or (customer.phone if customer else '') %}
+                {% if display_phone %}
+                <div>Ph: {{ display_phone }}</div>
                 {% endif %}
             </td>
             <td class="meta-no-date">
