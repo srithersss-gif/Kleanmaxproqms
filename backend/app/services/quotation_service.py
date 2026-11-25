@@ -41,8 +41,31 @@ def create_quotation(
     customer = db.query(Customer).filter(Customer.id == data.customer_id).first()
     if not customer:
         customer = db.query(Customer).filter(Customer.company_name.ilike(data.customer_id.strip())).first()
+
+    requested_client_name = (getattr(data, 'client_name', None) or '').strip()
+    if requested_client_name and (not customer or customer.company_name.strip().lower() != requested_client_name.lower()):
+        matched_cust = db.query(Customer).filter(Customer.company_name.ilike(requested_client_name)).first()
+        if matched_cust:
+            customer = matched_cust
+        else:
+            customer = Customer(
+                company_name=requested_client_name,
+                billing_address_line1=getattr(data, 'client_address', None) or "Perungudi Industrial Estate",
+                billing_city="Chennai",
+                billing_state="Tamil Nadu",
+                billing_state_code="33",
+                billing_pincode="600096",
+                phone=getattr(data, 'client_phone', None) or "+91 98840 12345",
+                gstin=getattr(data, 'client_gstin', None),
+                contact_person=getattr(data, 'attention_person', None),
+                is_active=True,
+                created_by_id=current_user.id if current_user else None
+            )
+            db.add(customer)
+            db.flush()
+
     if not customer:
-        client_name = getattr(data, 'client_name', None) or (data.customer_id if len(data.customer_id) < 60 and '-' not in data.customer_id else "Client")
+        client_name = requested_client_name or (data.customer_id if len(data.customer_id) < 60 and '-' not in data.customer_id else "Client")
         customer = Customer(
             company_name=client_name,
             billing_address_line1=getattr(data, 'client_address', None) or "Perungudi Industrial Estate",
@@ -360,9 +383,29 @@ def update_quotation(
         )
 
     customer = db.query(Customer).filter(Customer.id == (data.customer_id or quotation.customer_id)).first()
-    if customer:
-        if getattr(data, 'client_name', None):
-            customer.company_name = data.client_name.strip()
+    requested_client_name = (getattr(data, 'client_name', None) or '').strip()
+    if requested_client_name and (not customer or customer.company_name.strip().lower() != requested_client_name.lower()):
+        matched_cust = db.query(Customer).filter(Customer.company_name.ilike(requested_client_name)).first()
+        if matched_cust:
+            customer = matched_cust
+        else:
+            customer = Customer(
+                company_name=requested_client_name,
+                billing_address_line1=getattr(data, 'client_address', None) or "Chennai",
+                billing_city="Chennai",
+                billing_state="Tamil Nadu",
+                billing_state_code="33",
+                billing_pincode="600001",
+                phone=getattr(data, 'client_phone', None) or "+91 98840 12345",
+                gstin=getattr(data, 'client_gstin', None),
+                contact_person=getattr(data, 'attention_person', None),
+                is_active=True,
+                created_by_id=current_user.id if current_user else None
+            )
+            db.add(customer)
+            db.flush()
+        quotation.customer_id = customer.id
+    elif customer:
         if getattr(data, 'client_address', None):
             customer.billing_address_line1 = data.client_address.strip()
         if getattr(data, 'client_phone', None):

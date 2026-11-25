@@ -746,11 +746,15 @@ Recovery / Dirty Water Tank: 100 L`,
     setSaving(true);
     setToastMsg(null);
     try {
-      // Find or create customer
-      let targetCustId = selectedCustomerId;
+      // Find or create customer matching exact customerName
+      const trimmedName = customerName.trim() || 'ABANS FACILITY MANAGEMENT';
+      const matchedCust = customerList.find(
+        c => c.company_name.toLowerCase().trim() === trimmedName.toLowerCase()
+      );
+      let targetCustId = matchedCust?.id || '';
       if (!targetCustId) {
         const newCust = await api.customers.create({
-          company_name: customerName || 'ABANS FACILITY MANAGEMENT',
+          company_name: trimmedName,
           billing_address_line1: addressLine1 || 'Perungudi Industrial Estate',
           billing_address_line2: addressLine2 || undefined,
           contact_person: contactPerson || 'Facility Head',
@@ -764,7 +768,10 @@ Recovery / Dirty Water Tank: 100 L`,
           is_active: true,
         });
         targetCustId = newCust.id;
+        setCustomerList(prev => [...prev, newCust]);
         setSelectedCustomerId(newCust.id);
+      } else {
+        setSelectedCustomerId(targetCustId);
       }
 
       // Convert products to Quotation Items

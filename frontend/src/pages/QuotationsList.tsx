@@ -256,8 +256,8 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
             {brandFilter === 'kleanmaxpro'
               ? 'Kleanmax Pro Quotations'
               : brandFilter === 'kleanmax'
-              ? 'Kleanmax Quotations (Spares & Sales)'
-              : 'Quotations Directory'}
+                ? 'Kleanmax Quotations (Spares & Sales)'
+                : 'Quotations Directory'}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Employees can view, edit, download, and safely archive official records. Quotations are permanently preserved.
@@ -301,51 +301,46 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
               <button
                 onClick={() => setBrandFilter('all')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${
-                  brandFilter === 'all'
+                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${brandFilter === 'all'
                     ? 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 All Divisions
               </button>
               <button
                 onClick={() => setBrandFilter('kleanmaxpro')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${
-                  brandFilter === 'kleanmaxpro'
+                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${brandFilter === 'kleanmaxpro'
                     ? 'bg-[#FED10C] text-slate-950 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 KLEANMAX PRO
               </button>
               <button
                 onClick={() => setBrandFilter('kleanmax')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${
-                  brandFilter === 'kleanmax'
+                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${brandFilter === 'kleanmax'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 KLEANMAX
               </button>
               <button
                 onClick={() => setBrandFilter('uniquepainters')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${
-                  brandFilter === 'uniquepainters'
+                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${brandFilter === 'uniquepainters'
                     ? 'bg-[#1A5393] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 UNIQUE PAINTERS
               </button>
               <button
                 onClick={() => setBrandFilter('cleantech')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${
-                  brandFilter === 'cleantech'
+                className={`px-3 py-1 text-xs font-black rounded-md transition-all shrink-0 ${brandFilter === 'cleantech'
                     ? 'bg-slate-950 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 CLEANTECH
               </button>
@@ -360,11 +355,10 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
                   setViewMode('active');
                   setSelectedIds([]);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
-                  viewMode === 'active'
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${viewMode === 'active'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <FileText className="w-3.5 h-3.5 text-amber-500" />
                 <span>Active</span>
@@ -374,11 +368,10 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
                   setViewMode('archived');
                   setSelectedIds([]);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
-                  viewMode === 'archived'
+                className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${viewMode === 'archived'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Archive className="w-3.5 h-3.5 text-purple-600" />
                 <span>Archive</span>
@@ -404,11 +397,10 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`px-3 py-1 text-xs font-bold rounded-md transition-all shrink-0 ${
-                statusFilter === tab.id
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all shrink-0 ${statusFilter === tab.id
                   ? 'bg-slate-200 text-slate-900 font-extrabold shadow-2xs'
                   : 'text-slate-500 hover:text-slate-900'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -418,9 +410,8 @@ export const QuotationsList: React.FC<QuotationsListProps> = ({
 
       {/* Toast Notification */}
       {toastMsg && (
-        <div className={`p-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-xs animate-fade-in ${
-          toastMsg.type === 'success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-300' : 'bg-rose-50 text-rose-900 border border-rose-300'
-        }`}>
+        <div className={`p-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-xs animate-fade-in ${toastMsg.type === 'success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-300' : 'bg-rose-50 text-rose-900 border border-rose-300'
+          }`}>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>{toastMsg.message}</span>

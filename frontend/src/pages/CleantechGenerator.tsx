@@ -794,11 +794,15 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
     setSaving(true);
     setToastMsg(null);
     try {
-      // Find or create customer
-      let targetCustId = selectedCustomerId;
+      // Find or create customer matching exact customerName
+      const trimmedName = customerName.trim() || 'UNIQUE SOLUTIONS';
+      const matchedCust = customerList.find(
+        c => c.company_name.toLowerCase().trim() === trimmedName.toLowerCase()
+      );
+      let targetCustId = matchedCust?.id || '';
       if (!targetCustId) {
         const newCust = await api.customers.create({
-          company_name: customerName || 'UNIQUE SOLUTIONS',
+          company_name: trimmedName,
           billing_address_line1: addressLine1 || 'Guindy Industrial Estate',
           billing_address_line2: addressLine2 || undefined,
           contact_person: contactPerson || 'Service Operations Head',
@@ -812,7 +816,10 @@ export const CleantechGenerator: React.FC<CleantechGeneratorProps> = ({
           is_active: true,
         });
         targetCustId = newCust.id;
+        setCustomerList(prev => [...prev, newCust]);
         setSelectedCustomerId(newCust.id);
+      } else {
+        setSelectedCustomerId(targetCustId);
       }
 
       // Convert items to payload

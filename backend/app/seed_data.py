@@ -647,6 +647,46 @@ def run_seed():
             db.add(q4)
 
         db.commit()
+
+        # Repair any past quotations where snapshot_json.customerName differs from linked customer.company_name
+        try:
+            import json
+            all_quotes = db.query(Quotation).all()
+            repaired = 0
+            for q in all_quotes:
+                snap = q.snapshot_json
+                if isinstance(snap, str):
+                    try:
+                        snap = json.loads(snap)
+                    except Exception:
+                        snap = None
+                if isinstance(snap, dict):
+                    snap_name = (snap.get("customerName") or "").strip()
+                    if snap_name and q.customer and q.customer.company_name.strip().lower() != snap_name.lower():
+                        target_cust = db.query(Customer).filter(Customer.company_name.ilike(snap_name)).first()
+                        if not target_cust:
+                            target_cust = Customer(
+                                company_name=snap_name,
+                                billing_address_line1=(snap.get("addressLine1") or "Chennai").strip(),
+                                billing_city=(snap.get("addressLine2") or "Chennai").strip()[:100],
+                                billing_state="Tamil Nadu",
+                                billing_state_code="33",
+                                billing_pincode="600001",
+                                phone=(snap.get("phone") or snap.get("clientPhone") or "+91 98400 00000").strip()[:30],
+                                contact_person=(snap.get("contactPerson") or snap.get("attentionPerson") or "").strip()[:100] or None,
+                                gstin=(snap.get("gstin") or snap.get("clientGstin") or "").strip()[:50] or None,
+                                is_active=True
+                            )
+                            db.add(target_cust)
+                            db.flush()
+                        q.customer_id = target_cust.id
+                        repaired += 1
+            if repaired > 0:
+                db.commit()
+                print(f"Synced customer_id for {repaired} past quotation(s) from snapshot customerName.")
+        except Exception as sync_err:
+            print(f"Warning syncing past quotation customer names: {sync_err}")
+
         print("Database seeded successfully with 4 companies and complete catalogues!")
     finally:
         db.close()

@@ -574,30 +574,29 @@ export const UniquePaintersGenerator: React.FC<UniquePaintersGeneratorProps> = (
     setSaving(true);
     setToastMsg(null);
     try {
-      let targetCustId = selectedCustomerId;
+      const trimmedName = customerName.trim() || 'TRUE NUTRITION';
+      const found = customerList.find(
+        (c) => c.company_name.toLowerCase().trim() === trimmedName.toLowerCase()
+      );
+      let targetCustId = found?.id || '';
       if (!targetCustId) {
-        const found = customerList.find(
-          (c) => c.company_name.toLowerCase().trim() === customerName.toLowerCase().trim()
-        );
-        if (found) {
-          targetCustId = found.id;
-        } else {
-          const createdCust = await api.customers.create({
-            company_name: customerName.trim() || 'TRUE NUTRITION',
-            billing_address_line1: addressLine1.trim() || 'KODUNGAIYUR',
-            billing_city: addressLine2.split(',')[0].trim() || 'Chennai',
-            billing_state: 'Tamil Nadu',
-            billing_state_code: '33',
-            billing_pincode: '600118',
-            contact_person: contactPerson,
-            phone: phone.trim() || '07676131368',
-            gstin: gstin.trim() || undefined,
-            is_active: true,
-          });
-          targetCustId = createdCust.id;
-          setSelectedCustomerId(createdCust.id);
-          setCustomerList((prev) => [...prev, createdCust]);
-        }
+        const createdCust = await api.customers.create({
+          company_name: trimmedName,
+          billing_address_line1: addressLine1.trim() || 'KODUNGAIYUR',
+          billing_city: addressLine2.split(',')[0].trim() || 'Chennai',
+          billing_state: 'Tamil Nadu',
+          billing_state_code: '33',
+          billing_pincode: '600118',
+          contact_person: contactPerson,
+          phone: phone.trim() || '07676131368',
+          gstin: gstin.trim() || undefined,
+          is_active: true,
+        });
+        targetCustId = createdCust.id;
+        setSelectedCustomerId(createdCust.id);
+        setCustomerList((prev) => [...prev, createdCust]);
+      } else {
+        setSelectedCustomerId(targetCustId);
       }
 
       // Payload sections
